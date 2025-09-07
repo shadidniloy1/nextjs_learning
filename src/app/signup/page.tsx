@@ -1,29 +1,60 @@
-'use client';
+"use client";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-// import { axios } from "axios";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const SignupPage = () => {
-
+  const router = useRouter();
   const [user, setUser] = useState({
     username: "",
     email: "",
     password: "",
-  })
+  });
+
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const onSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = new FormData(e.currentTarget)
+    const form = new FormData(e.currentTarget);
     const username = form.get("username") as string;
     const email = form.get("email") as string;
     const password = form.get("password") as string;
-    
 
-    setUser({username, email, password});
+    setUser({ username, email, password });
     console.log("User stored in state:", { username, email, password });
-  }
-  
+
+    try {
+      setLoading(true);
+      const response = await axios.post("/api/users/signup", { username, email, password });
+      console.log("Sign up success", response.data);
+      toast.success("Signed up successfully")
+      router.push("/login")
+    } 
+    catch (error: any) {
+      console.log("Error in signup", error.message);
+      toast.error(error.message)
+      
+    }
+    finally{
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      user.email.length > 0 &&
+      user.password.length > 0 &&
+      user.username.length > 0
+    ) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
+  }, [user]);
+
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100">
       <form
@@ -66,9 +97,9 @@ const SignupPage = () => {
           type="submit"
           className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
         >
-          Sign Up
+          {buttonDisabled ? "Signup" : "Sign Up here"}
         </button>
-        <Link href='/login'>Go to login</Link>
+        <Link href="/login">Go to login</Link>
       </form>
     </div>
   );
