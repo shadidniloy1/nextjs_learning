@@ -1,23 +1,37 @@
-'use client';
+"use client";
 import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-// import { axios } from "axios";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
-
+  const router = useRouter();
   const [user, setUser] = useState({
     email: "",
     password: "",
-  })
+  });
 
   const onLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = new FormData(e.currentTarget)
+    const form = new FormData(e.currentTarget);
     const email = form.get("email");
     const password = form.get("password");
-  }
-  
+
+    try {
+      const response = await axios.post("/api/users/login", {
+        email,
+        password,
+      });
+      console.log("Log in success", response.data);
+      toast.success("Login successfull");
+      router.push("/profile");
+    } catch (error: any) {
+      console.log("Error in signup", error.message);
+      toast.error(error.message);
+    }
+  };
+
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100">
       <form
@@ -52,7 +66,7 @@ const LoginPage = () => {
         >
           Login
         </button>
-        <Link href='/signup'>Go to Signup</Link>
+        <Link href="/signup">Go to Signup</Link>
       </form>
     </div>
   );
